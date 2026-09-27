@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lista de compras - Mudanza</title>
+<style>
+:root{
+  --bg:#faf9f7; --card:#fff; --text:#2a2622; --muted:#7a7369;
+  --border:#e8e4de; --accent:#b5693a; --accent-soft:#f3e2d6;
+  --green:#4a7c59; --red:#b5453a; --red-soft:#f3d9d6; --radius:12px;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1c1a18; --card:#252220; --text:#eee8e0; --muted:#a39a8d;
+    --border:#39342e; --accent:#d98a5c; --accent-soft:#3a2a1f; --green:#7bb789;
+    --red:#e08b83; --red-soft:#3a2422;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1c1a18; --card:#252220; --text:#eee8e0; --muted:#a39a8d;
+  --border:#39342e; --accent:#d98a5c; --accent-soft:#3a2a1f; --green:#7bb789;
+  --red:#e08b83; --red-soft:#3a2422;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  min-height:100%; padding:20px 16px 80px;
+}
+.wrap{max-width:720px;margin:0 auto;}
+h1{font-size:1.4rem;margin:4px 0 2px;}
+.sub{color:var(--muted);font-size:.9rem;margin-bottom:18px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;}
+label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:4px;margin-top:10px;}
+label:first-child{margin-top:0;}
+input,select,textarea{
+  width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);
+  background:var(--bg);color:var(--text);font-size:.95rem;font-family:inherit;
+}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+button{
+  margin-top:14px;width:100%;padding:11px;border:none;border-radius:8px;
+  background:var(--accent);color:#fff;font-size:.95rem;font-weight:600;cursor:pointer;
+}
+button:active{opacity:.85;}
+.cat-group{margin-bottom:18px;}
+.cat-header{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:.85rem;font-weight:700;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.03em;margin-bottom:8px;padding:0 2px;
+}
+.item{
+  display:flex;align-items:flex-start;gap:10px;background:var(--card);
+  border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;
+}
+.item.bought{opacity:.5;}
+.item.bought .name{text-decoration:line-through;}
+.item input[type=checkbox]{width:20px;height:20px;flex-shrink:0;margin-top:2px;accent-color:var(--green);}
+.item-body{flex:1;min-width:0;}
+.name-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.name{font-weight:600;font-size:.95rem;word-break:break-word;}
+.meta{font-size:.8rem;color:var(--muted);margin-top:2px;}
+.notes-txt{font-size:.82rem;color:var(--muted);margin-top:4px;font-style:italic;}
+.resp-tag{font-size:.72rem;color:var(--muted);margin-top:4px;}
+.del{background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;padding:2px 6px;width:auto;margin:0;flex-shrink:0;}
+.empty{text-align:center;color:var(--muted);padding:30px 10px;font-size:.9rem;}
+.badge{display:inline-block;background:var(--accent-soft);color:var(--accent);font-size:.72rem;padding:2px 8px;border-radius:999px;margin-left:6px;}
+.link-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--border);font-size:.85rem;}
+.link-row a{color:var(--accent);text-decoration:none;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.link-price{font-weight:700;white-space:nowrap;}
+.best{color:var(--green);}
+.best-badge{font-size:.68rem;background:var(--accent-soft);color:var(--green);padding:1px 6px;border-radius:999px;}
+.link-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;padding:0 2px;width:auto;margin:0;}
+.add-link-form{display:flex;gap:6px;margin-top:8px;}
+.add-link-form input{padding:7px 9px;font-size:.85rem;}
+.add-link-form input[type=url]{flex:2;}
+.add-link-form input[type=number]{flex:1;}
+.add-link-form button{width:auto;margin:0;padding:7px 12px;font-size:.85rem;white-space:nowrap;}
+.cat-select-row{display:flex;gap:6px;}
+.cat-select-row select{flex:1;}
+.icon-btn{width:auto;margin:0;padding:9px 12px;background:var(--card);border:1px solid var(--border);color:var(--text);}
+.cats-panel{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.cats-panel.open{display:block;}
+.cat-chip-list{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;}
+.cat-chip{display:flex;align-items:center;gap:5px;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:4px 6px 4px 10px;font-size:.8rem;}
+.cat-chip button{width:auto;margin:0;padding:0 4px;background:none;color:var(--accent);font-weight:700;}
+.new-cat-form{display:flex;gap:6px;}
+.new-cat-form button{width:auto;margin:0;padding:9px 14px;}
+.summary{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;}
+.summary-row{display:flex;justify-content:space-between;font-size:.88rem;padding:3px 0;}
+.summary-row.total{font-weight:700;font-size:1rem;border-top:1px solid var(--border);margin-top:6px;padding-top:8px;}
+.progress-track{height:8px;background:var(--accent-soft);border-radius:999px;margin-top:10px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--green);border-radius:999px;transition:width .2s;}
+.budget-row{display:flex;gap:8px;align-items:center;margin-top:10px;}
+.budget-row input{flex:1;}
+.budget-row button{width:auto;margin:0;padding:9px 12px;}
+.toolbar{display:flex;gap:8px;margin-bottom:14px;}
+.toolbar input{flex:1;}
+.toolbar select{width:auto;flex-shrink:0;}
+.prio{font-size:.68rem;padding:1px 7px;border-radius:999px;font-weight:600;}
+.prio-Urgente{background:var(--red-soft);color:var(--red);}
+.prio-Importante{background:var(--accent-soft);color:var(--accent);}
+.prio-Puede.esperar,.prio-Puede{background:var(--border);color:var(--muted);}
+.toast{
+  position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));
+  max-width:680px;margin:0 auto;background:var(--text);color:var(--bg);
+  border-radius:10px;padding:12px 14px;display:none;align-items:center;justify-content:space-between;gap:10px;
+  font-size:.88rem;z-index:50;
+}
+.toast button{width:auto;margin:0;padding:6px 12px;background:var(--accent);font-size:.82rem;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🏠 Lista de compras — Mudanza</h1>
+  <p class="sub">Pegá links y precios, comparalos, organizá por categoría y prioridad.</p>
+
+  <div class="card">
+    <label>Nombre del producto</label>
+    <input id="f-name" type="text" placeholder="Ej: Juego de sábanas queen">
+    <div class="row2">
+      <div>
+        <label>Categoría</label>
+        <div class="cat-select-row">
+          <select id="f-cat"></select>
+          <button type="button" class="icon-btn" onclick="toggleCatsPanel()">⚙️</button>
+        </div>
+      </div>
+      <div>
+        <label>Prioridad</label>
+        <select id="f-prio">
+          <option value="Importante">Importante</option>
+          <option value="Urgente">Urgente</option>
+          <option value="Puede esperar">Puede esperar</option>
+        </select>
+      </div>
+    </div>
+    <div class="cats-panel" id="cats-panel">
+      <label>Categorías existentes</label>
+      <div class="cat-chip-list" id="cat-chip-list"></div>
+      <label>Nueva categoría</label>
+      <div class="new-cat-form">
+        <input id="new-cat-input" type="text" placeholder="Ej: Electrónica">
+        <button type="button" onclick="addCategory()">Agregar</button>
+      </div>
+    </div>
+    <label>Link (opcional, podés agregar más después)</label>
+    <input id="f-url" type="url" placeholder="https://...">
+    <div class="row2">
+      <div>
+        <label>Precio (ARS)</label>
+        <input id="f-price" type="number" placeholder="0">
+      </div>
+      <div>
+        <label>Responsable (opcional)</label>
+        <input id="f-resp" type="text" placeholder="Ej: Yo / Juan">
+      </div>
+    </div>
+    <label>Notas (opcional)</label>
+    <input id="f-notes" type="text" placeholder="Talle, color, medidas...">
+    <button onclick="addItem()">Agregar producto</button>
+  </div>
+
+  <div class="summary">
+    <div class="summary-row"><span>Productos pendientes</span><span id="pend-count">0</span></div>
+    <div class="summary-row"><span>Ya comprado</span><span id="bought-total">$0</span></div>
+    <div class="summary-row"><span>Falta comprar (mejor precio)</span><span id="pend-total">$0</span></div>
+    <div class="summary-row total"><span>Total estimado mudanza</span><span id="grand-total">$0</span></div>
+    <div class="progress-track"><div class="progress-fill" id="overall-fill" style="width:0%"></div></div>
+    <div class="summary-row" style="margin-top:4px;"><span id="overall-label" class="sub" style="margin:0;"></span></div>
+    <div class="budget-row">
+      <input id="budget-input" type="number" placeholder="Presupuesto total (opcional)">
+      <button type="button" onclick="setBudget()">Guardar</button>
+    </div>
+    <div id="budget-info" style="display:none;">
+      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      <div class="summary-row" style="margin-top:4px;"><span id="budget-label" class="sub" style="margin:0;"></span></div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <input id="search-input" type="text" placeholder="Buscar producto o nota...">
+    <select id="sort-select">
+      <option value="default">Pendientes primero</option>
+      <option value="price">Precio: menor a mayor</option>
+      <option value="priority">Prioridad</option>
+      <option value="alpha">Alfabético</option>
+    </select>
+  </div>
+
+  <div id="list"></div>
+</div>
+
+<div class="toast" id="undo-toast">
+  <span>Producto eliminado</span>
+  <button type="button" onclick="undoDelete()">Deshacer</button>
+</div>
+
+<script>
+const KEYWORDS = {
+  "Cocina": ["sarten","sartén","olla","cuchillo","cubiert","plato","vaso","taza","licuadora","tostadora","cafetera","microondas","heladera","cocina","batidora","tabla de cocina","utensilio"],
+  "Ropa de cama": ["sabana","sábana","almohada","acolchado","funda","cubrecama","colcha","frazada","edredon","edredón","cama queen","cama king"],
+  "Muebles": ["mesa","silla","sofa","sofá","sillon","sillón","ropero","placard","estante","comoda","cómoda","escritorio","cajonera","mueble","biblioteca","perchero","cama"],
+  "Baño": ["toalla","cortina de baño","alfombra de baño","jabonera","bacha","inodoro","espejo de baño","baño"],
+  "Electrodomésticos": ["aire acondicionado","ventilador","calefactor","lavarropas","plancha","aspiradora","estufa"]
+};
+const DEFAULT_CATS = ["Cocina","Ropa de cama","Muebles","Baño","Electrodomésticos","Otros"];
+const PRIO_ORDER = {"Urgente":0,"Importante":1,"Puede esperar":2};
+
+let items = [];
+let cats = [];
+let budget = 0;
+let openLinkForms = {};
+let searchTerm = '';
+let sortMode = 'default';
+let undoTimer = null;
+
+function suggestCategory(text){
+  const t = text.toLowerCase();
+  for (const cat of Object.keys(KEYWORDS)){
+    if (KEYWORDS[cat].some(k => t.includes(k)) && cats.includes(cat)) return cat;
+  }
+  return cats.includes("Otros") ? "Otros" : cats[0];
+}
+
+function populateCatSelect(){
+  const sel = document.getElementById('f-cat');
+  const current = sel.value;
+  sel.innerHTML = cats.map(c => `<option value="${escapeAttr(c)}">${escapeHtml(c)}</option>`).join('');
+  if (cats.includes(current)) sel.value = current;
+}
+
+function renderCatChips(){
+  document.getElementById('cat-chip-list').innerHTML = cats.map(c =>
+    `<span class="cat-chip">${escapeHtml(c)} <button type="button" onclick="removeCategory('${escapeAttr(c)}')" title="Eliminar">✕</button></span>`
+  ).join('');
+}
+
+function toggleCatsPanel(){
+  document.getElementById('cats-panel').classList.toggle('open');
+  renderCatChips();
+}
+
+function addCategory(){
+  const input = document.getElementById('new-cat-input');
+  const name = input.value.trim();
+  if (!name) return;
+  if (!cats.includes(name)) cats.push(name);
+  input.value='';
+  saveCats();
+  populateCatSelect();
+  renderCatChips();
+  document.getElementById('f-cat').value = name;
+}
+
+function removeCategory(name){
+  if (cats.length <= 1) { alert('Tiene que quedar al menos una categoría'); return; }
+  cats = cats.filter(c => c !== name);
+  const fallback = cats.includes("Otros") ? "Otros" : cats[0];
+  items.forEach(it => { if (it.cat === name) it.cat = fallback; });
+  saveCats(); saveItems();
+  populateCatSelect(); renderCatChips(); render();
+}
+
+function load(){
+  try{
+    const rawItems = localStorage.getItem('mudanza-items');
+    items = rawItems ? JSON.parse(rawItems) : [];
+    items.forEach(it=>{ if(!it.priority) it.priority='Importante'; if(it.notes===undefined) it.notes=''; if(it.responsible===undefined) it.responsible=''; });
+  }catch(e){ items = []; }
+  try{
+    const rawCats = localStorage.getItem('mudanza-cats');
+    cats = rawCats ? JSON.parse(rawCats) : DEFAULT_CATS.slice();
+    if (!cats.length) cats = DEFAULT_CATS.slice();
+  }catch(e){ cats = DEFAULT_CATS.slice(); }
+  try{
+    const rawBudget = localStorage.getItem('mudanza-budget');
+    budget = rawBudget ? parseFloat(rawBudget) : 0;
+  }catch(e){ budget = 0; }
+}
+function saveItems(){ try{ localStorage.setItem('mudanza-items', JSON.stringify(items)); }catch(e){} }
+function saveCats(){ try{ localStorage.setItem('mudanza-cats', JSON.stringify(cats)); }catch(e){} }
+function saveBudget(){ try{ localStorage.setItem('mudanza-budget', String(budget)); }catch(e){} }
+
+document.getElementById('f-name').addEventListener('input', (e)=>{
+  document.getElementById('f-cat').value = suggestCategory(e.target.value);
+});
+document.getElementById('search-input').addEventListener('input', (e)=>{
+  searchTerm = e.target.value.trim().toLowerCase();
+  render();
+});
+document.getElementById('sort-select').addEventListener('change', (e)=>{
+  sortMode = e.target.value;
+  render();
+});
+
+function addItem(){
+  const name = document.getElementById('f-name').value.trim();
+  const cat = document.getElementById('f-cat').value;
+  const prio = document.getElementById('f-prio').value;
+  const url = document.getElementById('f-url').value.trim();
+  const price = parseFloat(document.getElementById('f-price').value) || 0;
+  const resp = document.getElementById('f-resp').value.trim();
+  const notes = document.getElementById('f-notes').value.trim();
+  if (!name){ alert('Poné al menos el nombre del producto'); return; }
+  const links = [];
+  if (url || price) links.push({id:Date.now().toString()+'l', url, price});
+  items.push({id:Date.now().toString(), name, cat, bought:false, links, priority:prio, responsible:resp, notes, pendingDelete:false});
+  saveItems();
+  document.getElementById('f-name').value='';
+  document.getElementById('f-url').value='';
+  document.getElementById('f-price').value='';
+  document.getElementById('f-resp').value='';
+  document.getElementById('f-notes').value='';
+  render();
+}
+
+function toggleBought(id){
+  const it = items.find(i=>i.id===id);
+  if (it){ it.bought = !it.bought; saveItems(); render(); }
+}
+function removeItem(id){
+  const it = items.find(i=>i.id===id);
+  if (!it) return;
+  it.pendingDelete = true;
+  render();
+  showUndoToast(id);
+}
+function showUndoToast(id){
+  clearTimeout(undoTimer);
+  const toast = document.getElementById('undo-toast');
+  toast.style.display = 'flex';
+  toast.dataset.itemId = id;
+  undoTimer = setTimeout(()=>{ finalizeDelete(id); }, 5000);
+}
+function undoDelete(){
+  const toast = document.getElementById('undo-toast');
+  const id = toast.dataset.itemId;
+  const it = items.find(i=>i.id===id);
+  if (it) it.pendingDelete = false;
+  clearTimeout(undoTimer);
+  toast.style.display = 'none';
+  saveItems();
+  render();
+}
+function finalizeDelete(id){
+  items = items.filter(i => i.id !== id);
+  saveItems();
+  document.getElementById('undo-toast').style.display = 'none';
+  render();
+}
+function toggleLinkForm(itemId){
+  openLinkForms[itemId] = !openLinkForms[itemId];
+  render();
+}
+function addLink(itemId){
+  const urlEl = document.getElementById('link-url-'+itemId);
+  const priceEl = document.getElementById('link-price-'+itemId);
+  const url = urlEl.value.trim();
+  const price = parseFloat(priceEl.value) || 0;
+  if (!url && !price) return;
+  const it = items.find(i=>i.id===itemId);
+  it.links.push({id:Date.now().toString(), url, price});
+  openLinkForms[itemId] = false;
+  saveItems();
+  render();
+}
+function removeLink(itemId, linkId){
+  const it = items.find(i=>i.id===itemId);
+  it.links = it.links.filter(l=>l.id!==linkId);
+  saveItems(); render();
+}
+
+function setBudget(){
+  budget = parseFloat(document.getElementById('budget-input').value) || 0;
+  saveBudget(); render();
+}
+
+function cheapest(it){
+  if (!it.links.length) return 0;
+  const prices = it.links.map(l=>l.price||0).filter(p=>p>0);
+  return prices.length ? Math.min(...prices) : 0;
+}
+
+function fmt(n){
+  return '$' + Math.round(n).toLocaleString('es-AR', {maximumFractionDigits:0});
+}
+
+function sortList(arr){
+  const arr2 = arr.slice();
+  if (sortMode === 'price') arr2.sort((a,b)=>cheapest(a)-cheapest(b));
+  else if (sortMode === 'priority') arr2.sort((a,b)=>(PRIO_ORDER[a.priority]??3)-(PRIO_ORDER[b.priority]??3));
+  else if (sortMode === 'alpha') arr2.sort((a,b)=>a.name.localeCompare(b.name,'es'));
+  else arr2.sort((a,b)=> (a.bought===b.bought)?0:(a.bought?1:-1));
+  return arr2;
+}
+
+function render(){
+  const list = document.getElementById('list');
+  const visible = items.filter(i=>!i.pendingDelete);
+  const filtered = searchTerm
+    ? visible.filter(i => i.name.toLowerCase().includes(searchTerm) || (i.notes||'').toLowerCase().includes(searchTerm))
+    : visible;
+
+  const pendItems = visible.filter(i=>!i.bought);
+  const boughtItems = visible.filter(i=>i.bought);
+  const pendTotal = pendItems.reduce((s,i)=>s+cheapest(i),0);
+  const boughtTotal = boughtItems.reduce((s,i)=>s+cheapest(i),0);
+  const grand = pendTotal + boughtTotal;
+
+  document.getElementById('pend-count').textContent = pendItems.length;
+  document.getElementById('pend-total').textContent = fmt(pendTotal);
+  document.getElementById('bought-total').textContent = fmt(boughtTotal);
+  document.getElementById('grand-total').textContent = fmt(grand);
+
+  const totalCount = visible.length;
+  const overallPct = totalCount ? Math.round((boughtItems.length/totalCount)*100) : 0;
+  document.getElementById('overall-fill').style.width = overallPct + '%';
+  document.getElementById('overall-label').textContent = totalCount
+    ? `Progreso de compras: ${boughtItems.length}/${totalCount} productos (${overallPct}%)`
+    : 'Progreso de compras: sin productos todavía';
+
+  document.getElementById('budget-input').value = budget || '';
+  const budgetInfo = document.getElementById('budget-info');
+  if (budget > 0){
+    budgetInfo.style.display = 'block';
+    const pct = Math.min(100, (boughtTotal / budget) * 100);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    const remaining = budget - boughtTotal;
+    document.getElementById('budget-label').textContent =
+      remaining >= 0 ? `Gastaste ${fmt(boughtTotal)} de ${fmt(budget)} · quedan ${fmt(remaining)}`
+                      : `Te pasaste ${fmt(-remaining)} del presupuesto de ${fmt(budget)}`;
+  } else {
+    budgetInfo.style.display = 'none';
+  }
+
+  if (visible.length === 0){
+    list.innerHTML = '<div class="empty">Todavía no agregaste productos. Empezá arriba 👆</div>';
+    return;
+  }
+  if (filtered.length === 0){
+    list.innerHTML = '<div class="empty">Ningún producto coincide con la búsqueda.</div>';
+    return;
+  }
+
+  let html = '';
+  for (const cat of cats){
+    const catItems = sortList(filtered.filter(i=>i.cat===cat));
+    if (catItems.length === 0) continue;
+    const subtotal = catItems.reduce((s,i)=>s+(i.bought?0:cheapest(i)),0);
+    html += `<div class="cat-group"><div class="cat-header"><span>${escapeHtml(cat)} <span class="badge">${catItems.length}</span></span><span>${fmt(subtotal)}</span></div>`;
+    for (const it of catItems){
+      const min = it.links.length ? Math.min(...it.links.map(l=>l.price||Infinity)) : null;
+      html += `<div class="item ${it.bought?'bought':''}">
+        <input type="checkbox" ${it.bought?'checked':''} onchange="toggleBought('${it.id}')">
+        <div class="item-body">
+          <div class="name-row">
+            <span class="name">${escapeHtml(it.name)}</span>
+            <span class="prio prio-${escapeAttr(it.priority.replace(' ','.'))}">${escapeHtml(it.priority)}</span>
+          </div>`;
+      if (it.responsible) html += `<div class="resp-tag">👤 ${escapeHtml(it.responsible)}</div>`;
+      if (it.notes) html += `<div class="notes-txt">${escapeHtml(it.notes)}</div>`;
+      if (it.links.length){
+        for (const l of it.links){
+          const isBest = min !== null && l.price === min && it.links.length > 1;
+          html += `<div class="link-row">
+            ${l.url ? `<a href="${escapeAttr(l.url)}" target="_blank" rel="noopener">${escapeHtml(l.url.replace(/^https?:\/\//,'').split('/')[0])} ↗</a>` : '<span style="color:var(--muted);flex:1;">Sin link</span>'}
+            <span class="link-price ${isBest?'best':''}">${fmt(l.price||0)}</span>
+            ${isBest ? '<span class="best-badge">mejor precio</span>' : ''}
+            <button class="link-del" onclick="removeLink('${it.id}','${l.id}')">✕</button>
+          </div>`;
+        }
+      } else {
+        html += `<div class="meta" style="margin-top:6px;">Sin links todavía</div>`;
+      }
+      if (openLinkForms[it.id]){
+        html += `<div class="add-link-form">
+          <input id="link-url-${it.id}" type="url" placeholder="Link">
+          <input id="link-price-${it.id}" type="number" placeholder="Precio">
+          <button type="button" onclick="addLink('${it.id}')">OK</button>
+        </div>`;
+      } else {
+        html += `<button type="button" class="icon-btn" style="margin-top:8px;padding:6px 10px;font-size:.8rem;" onclick="toggleLinkForm('${it.id}')">+ Comparar otra opción</button>`;
+      }
+      html += `</div>
+        <button class="del" onclick="removeItem('${it.id}')" title="Eliminar producto">✕</button>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+  list.innerHTML = html || '<div class="empty">Ningún producto coincide con la búsqueda.</div>';
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(s){ return escapeHtml(s); }
+
+load();
+populateCatSelect();
+renderCatChips();
+render();
+</script>
+</body>
+</html>
